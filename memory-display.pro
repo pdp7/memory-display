@@ -1,4 +1,4 @@
-update=Sun 24 Jul 2016 01:27:52 AM CDT
+update=Tue 26 Jul 2016 01:18:56 PM CDT
 version=1
 last_client=kicad
 [cvpcb]
@@ -125,5 +125,3 @@ LibName83=contrib_symbols_dl1eic/Symbols_EN60617_13Mar2013
 LibName84=contrib_symbols_dl1eic/Symbols_EN60617-10_HF-Radio_DRAFT_12Sep2013
 LibName85=contrib_symbols_dl1eic/Symbols_DCDC-ACDC-Converter_RevC_20Jul2012
 LibName86=contrib_symbols_dl1eic/SymbolsSimilarEN60617+oldDIN617-RevE8
-LibName87=/home/bonniek/kicad/wickerlib/libraries/wickerlib
-LibName88=/home/bonniek/kicad/wickerlib/libraries/chip-dips
