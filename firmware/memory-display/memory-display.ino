@@ -1,19 +1,19 @@
 /*********************************************************************
-Based on library code and example code from Adafruit Industries:
+  Based on library code and example code from Adafruit Industries:
 
-  * example sketch for our Monochrome SHARP Memory Displays
+    example sketch for our Monochrome SHARP Memory Displays
       http://www.adafruit.com/products/1393
-  * library for the BME280 humidity, temperature & pressure sensor
+    library for the BME280 humidity, temperature & pressure sensor
       http://www.adafruit.com/products/2650
 
-NOTE from Adafruit: 
-Adafruit invests time and resources providing this open source code, 
-please support Adafruit and open-source hardware by purchasing 
-products from Adafruit!
+  NOTE from Adafruit:
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
+  products from Adafruit!
 
-LICENSE for Adafruit code:
-Written by Limor Fried & Kevin Townsend for Adafruit Industries.
-BSD license, all text above must be included in any redistribution
+  LICENSE for Adafruit code:
+  Written by Limor Fried & Kevin Townsend for Adafruit Industries.
+  BSD license, all text above must be included in any redistribution
 *********************************************************************/
 
 #include <Wire.h>
@@ -40,6 +40,9 @@ BSD license, all text above must be included in any redistribution
 Adafruit_SharpMem display(SCK, MOSI, SS);
 Adafruit_BME280 bme; // I2C
 
+bool inverted = false;
+int prev_reading = 0;
+
 void setup() {
 
   display.begin();
@@ -55,7 +58,11 @@ void setup() {
 
   display.refresh();
   delay(100);
+
+  prev_reading = touchRead(A1);
 }
+
+
 
 void loop() {
   float temp_c = bme.readTemperature();
@@ -64,9 +71,14 @@ void loop() {
   float hpa = bme.readPressure() / 100.0F;
   float alt = bme.readAltitude(SEALEVELPRESSURE_HPA);
 
+
   
-  display.fillRect(0, 0, display.width(), display.height(), 0);
-  display.setTextColor(WHITE, BLACK); // 'inverted' text
+  if (inverted) {
+    display.fillRect(0, 0, display.width(), display.height(), 0);
+    display.setTextColor(WHITE, BLACK);
+  } else {
+    display.setTextColor(BLACK, WHITE);
+  }
   display.setCursor(0, 0);
 
   display.setTextSize(2);
@@ -75,17 +87,17 @@ void loop() {
   display.print("F ");
   display.setTextSize(2);
   display.println();
-  
+
   display.setTextSize(2);
   display.print( temp_c );
   display.setTextSize(1);
   display.print("C");
   display.setTextSize(2);
   display.println();
-  
+
   display.setTextSize(1);
   display.println();
-  
+
   display.setTextSize(2);
   display.print(humidity);
   display.println("%");
@@ -98,12 +110,20 @@ void loop() {
   display.print("m");
   display.setTextSize(2);
   display.println();
-  
+
   display.setTextSize(1);
-  display.print( hpa );
-  display.print(" hPa");
-  
+  //display.print( hpa );
+  //display.print(" hPa");
+  int reading = touchRead(A1);
+  int delta = abs(reading - prev_reading);
+  display.print(delta);
+  display.print("=|");
+  display.print(prev_reading);
+  display.print("-");
+  display.print(reading);
+  display.print("|");
   display.refresh();
   delay(1000);
+  display.clearDisplay();
 
 }
