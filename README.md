@@ -8,3 +8,6 @@
 
 ## Photos
 * [Google+ gallery](https://plus.google.com/photos/+DrewFustini/albums/6319926590582577217)
+
+## Video
+* [YouTube](https://www.youtube.com/watch?v=esPlImZcRdI)
