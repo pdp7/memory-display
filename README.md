@@ -8,9 +8,8 @@
 
 ## Video
 * [YouTube](https://www.youtube.com/watch?v=esPlImZcRdI)
-* 
+
 ## Photos
 * [Google+ gallery](https://plus.google.com/photos/+DrewFustini/albums/6319926590582577217)
 * [images gallery](https://github.com/pdp7/memory-display/tree/master/images)
 * ![photo of board](images/cropped.png)
-
