@@ -71,8 +71,6 @@ void loop() {
   float hpa = bme.readPressure() / 100.0F;
   float alt = bme.readAltitude(SEALEVELPRESSURE_HPA);
 
-
-  
   if (inverted) {
     display.fillRect(0, 0, display.width(), display.height(), 0);
     display.setTextColor(WHITE, BLACK);
@@ -126,4 +124,11 @@ void loop() {
   delay(1000);
   display.clearDisplay();
 
+  Serial.println(temp_f);
+  
+  if (inverted)
+    inverted = false;
+  else 
+    inverted = true;
+  
 }
