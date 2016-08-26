@@ -37,15 +37,28 @@
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 
+#define REFRESH_DELAY_MS 2000
+#define TOUCH_DELTA_THRESHOLD 500
+
 Adafruit_SharpMem display(SCK, MOSI, SS);
 Adafruit_BME280 bme; // I2C
 
-bool inverted = false;
-int prev_reading = 0;
+bool inverted = false; // state of display, black on white is default
+bool touch_state = false; // state of cap touch button
+bool old_touch_state = false; // previous state of cap touch button
+int old_reading = 0; // previous cap touch pin reading
+
+// true when display transistioned in previous iteration
+bool recent_transition = false;
 
 void setup() {
 
   display.begin();
+  display.clearDisplay();
+  display.setTextColor(BLACK, WHITE);
+  display.println("SHARP Mem LCD");
+  display.refresh();
+  delay(1000);
   display.clearDisplay();
 
   Serial.begin(9600);
@@ -59,12 +72,11 @@ void setup() {
   display.refresh();
   delay(100);
 
-  prev_reading = touchRead(A1);
+  old_reading = touchRead(A1);
 }
 
-
-
 void loop() {
+
   float temp_c = bme.readTemperature();
   float temp_f = (((temp_c * 9.0) / 5.0 ) + 32.0 );
   float humidity = bme.readHumidity();
@@ -77,6 +89,7 @@ void loop() {
   } else {
     display.setTextColor(BLACK, WHITE);
   }
+
   display.setCursor(0, 0);
 
   display.setTextSize(2);
@@ -110,25 +123,56 @@ void loop() {
   display.println();
 
   display.setTextSize(1);
-  //display.print( hpa );
-  //display.print(" hPa");
+
+  display.print( hpa );
+  display.print(" hPa");
+
   int reading = touchRead(A1);
-  int delta = abs(reading - prev_reading);
+  int delta = abs(reading - old_reading);
+
+  /*
   display.print(delta);
   display.print("=|");
-  display.print(prev_reading);
+  display.print(old_reading);
   display.print("-");
   display.print(reading);
   display.print("|");
+  */
+  
   display.refresh();
-  delay(1000);
-  display.clearDisplay();
+  delay(REFRESH_DELAY_MS);
 
-  Serial.println(temp_f);
+  if (delta > TOUCH_DELTA_THRESHOLD) {
+    touch_state = true;
+  } else {
+    touch_state = false;
+  }
   
-  if (inverted)
-    inverted = false;
-  else 
-    inverted = true;
+  // change display state on button transistion
+  if ((touch_state != old_touch_state) && (!recent_transition)) {
+      if (inverted) {
+        inverted = false;
+      } else {
+        inverted = true;
+      }
+      display.clearDisplay();
+      recent_transition = true;
+  } else {
+    recent_transition = false;
+  }
+
+  /*
+  Serial.print("old_touch_state=");
+  Serial.print(old_touch_state);
+  Serial.print("\ttouch_state=");
+  Serial.print(touch_state);
+  Serial.print("\tinverted=");
+  Serial.print(inverted);
+  Serial.print("\trecent_transition=");
+  Serial.print(recent_transition);
+  Serial.println();
+  */
   
+  // current touch button state now becomes the old state
+  old_touch_state = touch_state;
 }
