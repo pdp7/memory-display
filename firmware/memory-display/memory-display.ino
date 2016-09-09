@@ -21,7 +21,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SharpMem.h>
 #include <Adafruit_Sensor.h>
-#include <Adafruit_BMP280.h>
+#include <Adafruit_BME280.h>
 
 #define SCK 10
 #define MOSI 11
@@ -41,7 +41,7 @@
 #define TOUCH_DELTA_THRESHOLD 500
 
 Adafruit_SharpMem display(SCK, MOSI, SS);
-Adafruit_BMP280 bmp; // I2C
+Adafruit_BME280 bme; // I2C
 
 bool inverted = false; // state of display, black on white is default
 bool touch_state = false; // state of cap touch button
@@ -56,28 +56,16 @@ void setup() {
   display.begin();
   display.clearDisplay();
   display.setTextColor(BLACK, WHITE);
-  display.setTextSize(3);
-  display.println("SHARP");
-  display.setTextSize(1);
-  display.println();
-  display.setTextSize(2);
-  display.println(" Memory");
-  display.setTextSize(1);
-  display.println();
-  display.setTextSize(2);
-  display.println("  LCD");
-  display.setTextSize(1);
-  display.println();
-  display.setTextWrap(false);
+  display.println("SHARP Mem LCD");
   display.refresh();
   delay(1000);
   display.clearDisplay();
 
   Serial.begin(9600);
-  Serial.println(F("BMP280 test"));
+  Serial.println(F("BME280 test"));
 
-  if (!bmp.begin()) {
-    Serial.println("Could not find a valid BMP280 sensor, check wiring!");
+  if (!bme.begin()) {
+    Serial.println("Could not find a valid BME280 sensor, check wiring!");
     while (1);
   }
 
@@ -88,10 +76,12 @@ void setup() {
 }
 
 void loop() {
-  float temp_c = bmp.readTemperature();
+
+  float temp_c = bme.readTemperature();
   float temp_f = (((temp_c * 9.0) / 5.0 ) + 32.0 );
-  float hpa = bmp.readPressure() / 100.0F;
-  float alt = bmp.readAltitude(SEALEVELPRESSURE_HPA);
+  float humidity = bme.readHumidity();
+  float hpa = bme.readPressure() / 100.0F;
+  float alt = bme.readAltitude(SEALEVELPRESSURE_HPA);
 
   if (inverted) {
     display.fillRect(0, 0, display.width(), display.height(), 0);
@@ -102,47 +92,53 @@ void loop() {
 
   display.setCursor(0, 0);
 
-  // slim horizontal padding
-  display.setTextSize(1);
-  display.print(" ");
-
-  display.setTextSize(3);
-  display.print( temp_f, (temp_f < 99) ? 1 : 0  );
   display.setTextSize(2);
-  display.print("F");
-
-  display.setTextSize(3);
+  display.print( temp_f );
+  display.setTextSize(1);
+  display.print("F ");
+  display.setTextSize(2);
   display.println();
 
-  // slim vertical padding
-  display.setTextSize(1);
-  display.println();
-
-  // slim horizontal padding
-  display.setTextSize(1);
-  display.print(" ");
-  display.setTextSize(3);
-  display.print( temp_c, (temp_c < 99) ? 1 : 0 );
   display.setTextSize(2);
+  display.print( temp_c );
+  display.setTextSize(1);
   display.print("C");
   display.setTextSize(2);
   display.println();
 
   display.setTextSize(1);
   display.println();
+
+  display.setTextSize(2);
+  display.print(humidity);
+  display.println("%");
+
+  display.setTextSize(1);
   display.println();
-  display.println(" Altitude:");
-  display.print(" ");
+
+  display.setTextSize(2);
   display.print(alt);
-  display.println(" m");
-  display.println(" Pressure:");
-  display.print(" ");
+  display.print("m");
+  display.setTextSize(2);
+  display.println();
+
+  display.setTextSize(1);
+
   display.print( hpa );
   display.print(" hPa");
 
   int reading = touchRead(A1);
   int delta = abs(reading - old_reading);
 
+  /*
+  display.print(delta);
+  display.print("=|");
+  display.print(old_reading);
+  display.print("-");
+  display.print(reading);
+  display.print("|");
+  */
+  
   display.refresh();
   delay(REFRESH_DELAY_MS);
 
@@ -151,20 +147,32 @@ void loop() {
   } else {
     touch_state = false;
   }
-
+  
   // change display state on button transistion
   if ((touch_state != old_touch_state) && (!recent_transition)) {
-    if (inverted) {
-      inverted = false;
-    } else {
-      inverted = true;
-    }
-    display.clearDisplay();
-    recent_transition = true;
+      if (inverted) {
+        inverted = false;
+      } else {
+        inverted = true;
+      }
+      display.clearDisplay();
+      recent_transition = true;
   } else {
     recent_transition = false;
   }
 
+  /*
+  Serial.print("old_touch_state=");
+  Serial.print(old_touch_state);
+  Serial.print("\ttouch_state=");
+  Serial.print(touch_state);
+  Serial.print("\tinverted=");
+  Serial.print(inverted);
+  Serial.print("\trecent_transition=");
+  Serial.print(recent_transition);
+  Serial.println();
+  */
+  
   // current touch button state now becomes the old state
   old_touch_state = touch_state;
 }
